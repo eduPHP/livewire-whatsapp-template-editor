@@ -1,5 +1,5 @@
 {
-    "name": "wa-connect/wa-templates",
+    "name": "eduphp/livewire-whatsapp-template-editor",
     "description": "Livewire editor and visualizer for WhatsApp Business message templates.",
     "type": "library",
     "license": "MIT",

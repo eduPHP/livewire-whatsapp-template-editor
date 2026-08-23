@@ -1,4 +1,4 @@
-# wa-templates
+# livewire-whatsapp-template-editor
 
 A Livewire editor and visualizer for WhatsApp Business message templates.
 
@@ -7,15 +7,31 @@ Mary, Flux, or Filament.
 
 ## Install
 
-```bash
-composer require wa-connect/wa-templates
+The package is not on Packagist, so point Composer at the GitHub repository:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/eduPHP/livewire-whatsapp-template-editor"
+        }
+    ]
+}
 ```
+
+```bash
+composer require eduphp/livewire-whatsapp-template-editor:dev-main
+```
+
+There is no tagged release yet, so `dev-main` is the only constraint that
+resolves. Track a tag instead once one exists.
 
 Tailwind 4 is CSS-first and does not scan vendor paths by default, so register
 the package's views in your stylesheet:
 
 ```css
-@source '../../vendor/wa-connect/wa-templates/resources/views/**/*.blade.php';
+@source '../../vendor/eduphp/livewire-whatsapp-template-editor/resources/views/**/*.blade.php';
 ```
 
 **A missed `@source` renders the phone mock unstyled**, which is a confusing
