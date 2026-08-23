@@ -67,12 +67,52 @@ class MetadataPanel extends Panel
                 array_map(fn (Category $case): string => $case->value, Category::cases()),
                 array_map(fn (Category $case): string => ucfirst(strtolower($case->name)), Category::cases()),
             ),
+            /**
+             * What each category means for the operator choosing one. The names
+             * alone do not distinguish them, and the choice is consequential:
+             * category decides both the price of a send and how strict the
+             * review is.
+             */
+            'categoryHints' => [
+                Category::Utility->value => __('confirmations, notices'),
+                Category::Marketing->value => __('offers, announcements'),
+                Category::Authentication->value => __('verification codes'),
+            ],
+            'languages' => self::languages(),
             'formats' => [
                 ParameterFormat::Positional->value => __('Numbered — {{1}}, {{2}}'),
                 ParameterFormat::Named->value => __('Named — {{order_number}}'),
             ],
             /** The name rule is Meta's, not a house style, so it is stated. */
-            'nameHint' => __('Lowercase letters, numbers and underscores only.'),
+            'nameHint' => __('Lowercase letters, numbers and underscores. Cannot be changed once approved.'),
         ]);
+    }
+
+    /**
+     * Meta's template language codes, by name.
+     *
+     * A shortlist rather than the full ~80 Meta accepts: a select of that
+     * length is worse to use than a short one covering nearly every template
+     * this app will carry. The stored value is Meta's code either way, so a
+     * template imported in an unlisted language round-trips untouched — it is
+     * only the picker that is short, not the format.
+     *
+     * @return array<string,string>
+     */
+    public static function languages(): array
+    {
+        return [
+            'pt_BR' => __('Portuguese (BR)'),
+            'pt_PT' => __('Portuguese (PT)'),
+            'en' => __('English'),
+            'en_US' => __('English (US)'),
+            'en_GB' => __('English (UK)'),
+            'es' => __('Spanish'),
+            'es_AR' => __('Spanish (AR)'),
+            'es_MX' => __('Spanish (MX)'),
+            'fr' => __('French'),
+            'de' => __('German'),
+            'it' => __('Italian'),
+        ];
     }
 }

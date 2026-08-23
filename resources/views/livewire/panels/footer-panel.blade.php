@@ -1,13 +1,16 @@
-<x-wa-templates::form.panel
-    :title="__('Footer')"
-    :description="__('Small print under the body. No variables.')"
-    :invalid="$this->hasErrors()"
->
-    <x-slot:actions>
-        <x-wa-templates::form.button variant="danger" wire:click="remove">
+<div>
+    <div class="mb-1.5 flex flex-wrap items-baseline justify-between gap-2">
+        <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+            {{ __('Footer') }}
+            <span class="ml-1 text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                {{ __('A quiet line at the foot of the message · no variables · up to 60 characters') }}
+            </span>
+        </p>
+
+        <x-wa-templates::form.button variant="danger" wire:click="remove" class="shrink-0">
             {{ __('Remove') }}
         </x-wa-templates::form.button>
-    </x-slot:actions>
+    </div>
 
     <x-wa-templates::form.field
         :errors="$this->errorsFor('footer.text')"
@@ -20,4 +23,4 @@
             :placeholder="__('Reply STOP to unsubscribe')"
         />
     </x-wa-templates::form.field>
-</x-wa-templates::form.panel>
+</div>

@@ -96,6 +96,19 @@ class ButtonsPanel extends Panel
                 ButtonType::CopyCode->value => __('Copy code'),
                 ButtonType::Mpm->value => __('Product list (MPM)'),
             ],
+            /**
+             * What the recipient's tap does. The type names alone do not say,
+             * and the difference is the whole choice: a quick reply comes back
+             * as a message the inbox receives, while a URL button leaves
+             * WhatsApp entirely.
+             */
+            'behaviours' => [
+                ButtonType::QuickReply->value => __('sends the button text back as a message'),
+                ButtonType::Url->value => __('opens a link outside WhatsApp'),
+                ButtonType::PhoneNumber->value => __('starts a call'),
+                ButtonType::CopyCode->value => __('copies a code to the clipboard'),
+                ButtonType::Mpm->value => __('opens the product catalogue'),
+            ],
             'labelMax' => TemplateValidator::BUTTON_LABEL_MAX,
             'quickReplyMax' => TemplateValidator::QUICK_REPLY_TEXT_MAX,
             'copyCodeMax' => TemplateValidator::COPY_CODE_MAX,

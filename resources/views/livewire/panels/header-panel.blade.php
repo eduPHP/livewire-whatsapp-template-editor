@@ -1,46 +1,14 @@
-<x-wa-templates::form.panel
-    :title="__('Header')"
-    :description="__('Optional. Text, media, or a map.')"
-    :invalid="$this->hasErrors()"
->
-    <x-slot:actions>
-        <x-wa-templates::form.button variant="danger" wire:click="remove">
-            {{ __('Remove') }}
-        </x-wa-templates::form.button>
-    </x-slot:actions>
-
-    <x-wa-templates::form.field :label="__('Format')">
-        <x-wa-templates::form.select wire:model.live="format">
-            @foreach ($formats as $case)
-                @php
-                    /**
-                     * A product header belongs to a carousel card, not to a
-                     * template header, so it is not offered here at all —
-                     * unlike media, which is a real option this installation
-                     * may simply be unable to use yet.
-                     */
-                    $unavailable = $case->isMedia() && $mediaReason !== null;
-                @endphp
-
-                @continue($case === \WaTemplates\Enums\HeaderFormat::Product)
-
-                <option value="{{ $case->value }}" @disabled($unavailable)>
-                    {{ ucfirst(strtolower($case->name)) }}{{ $unavailable ? ' — '.__('unavailable') : '' }}
-                </option>
-            @endforeach
-        </x-wa-templates::form.select>
-    </x-wa-templates::form.field>
-
+<div>
     @if ($mediaReason)
-        <p class="mt-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+        <p class="mb-2 rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[11px] text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
             {{ $mediaReason }}
         </p>
     @endif
 
     @if ($format === 'TEXT')
-        <div class="mt-3">
+        <div>
             <x-wa-templates::form.field
-                :label="__('Text')"
+                :label="__('Header text')"
                 :errors="$this->errorsFor('header.text')"
                 :count="mb_strlen($text)"
                 :max="$max"
@@ -108,13 +76,13 @@
              message, not with the template, so one approved template serves
              every destination — baking an address in would mean a separate
              approved template per place. --}}
-        <p class="mt-3 rounded border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-neutral-400">
+        <p class="rounded border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-[11px] text-neutral-600 dark:border-neutral-800 dark:bg-neutral-800/40 dark:text-neutral-400">
             {{ __('The pin, place name and address are supplied per message when you send it — not here. That way one approved template covers every destination.') }}
         </p>
     @else
-        <div class="mt-3">
+        <div>
             <x-wa-templates::form.field
-                :label="__('Asset')"
+                :label="__('Example asset')"
                 :hint="__('Uploaded to Meta to obtain a header handle. Not the same as a media id used for sending.')"
                 :errors="$this->errorsFor('header.handle')"
             >
@@ -141,4 +109,4 @@
             @endif
         </div>
     @endif
-</x-wa-templates::form.panel>
+</div>

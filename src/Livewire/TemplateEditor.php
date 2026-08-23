@@ -12,9 +12,11 @@ use WaTemplates\Contracts\MediaUploader;
 use WaTemplates\Contracts\PrefilledVariable;
 use WaTemplates\Contracts\VariableSource;
 use WaTemplates\Draft\TemplateDraft;
+use WaTemplates\Enums\Step;
 use WaTemplates\Livewire\Support\DraftState;
 use WaTemplates\Rendering\TemplateRenderer;
 use WaTemplates\Validation\TemplateValidator;
+use WaTemplates\Validation\ValidationResult;
 
 /**
  * The editor's orchestrator: it owns the draft, and nothing else does.
@@ -41,6 +43,15 @@ class TemplateEditor extends Component
     public array $state = [];
 
     /**
+     * Which wizard step is on screen, as the enum's value.
+     *
+     * A string rather than the enum itself because Livewire round-trips public
+     * properties through JSON; `step()` is the typed accessor everything else
+     * uses.
+     */
+    public string $step = 'identification';
+
+    /**
      * @param  array<string,mixed>|null  $template  A Meta create request, or its bare `components` array.
      */
     public function mount(?array $template = null): void
@@ -50,6 +61,78 @@ class TemplateEditor extends Component
         );
 
         $this->emitChange();
+    }
+
+    public function step(): Step
+    {
+        return Step::tryFrom($this->step) ?? Step::Identification;
+    }
+
+    /**
+     * Move to a step by name.
+     *
+     * Free navigation is deliberate: the numbered header is clickable, so an
+     * operator who has filled in the body can jump back to the name without
+     * walking the steps in reverse. The gate below only guards `continue()`,
+     * which is the path a first-time operator follows.
+     */
+    public function goToStep(string $step): void
+    {
+        $this->step = (Step::tryFrom($step) ?? Step::Identification)->value;
+    }
+
+    /**
+     * Advance, unless this step's own fields are wrong.
+     *
+     * Scoped to the current step's error prefixes rather than the whole
+     * validation result: an empty body is a real error the moment the editor
+     * opens, and gating step 1 on the entire template would refuse to let the
+     * operator reach the body field that would fix it.
+     */
+    public function continue(): void
+    {
+        if ($this->stepErrors($this->step()) !== []) {
+            return;
+        }
+
+        $next = $this->step()->next();
+
+        if ($next !== null) {
+            $this->step = $next->value;
+        }
+    }
+
+    public function back(): void
+    {
+        $previous = $this->step()->previous();
+
+        if ($previous !== null) {
+            $this->step = $previous->value;
+        }
+    }
+
+    /**
+     * Errors belonging to one step, flattened for display under it.
+     *
+     * @return list<string>
+     */
+    public function stepErrors(Step $step): array
+    {
+        $result = new ValidationResult($this->validation()->errors);
+        $errors = [];
+
+        foreach ($step->errorPrefixes() as $prefix) {
+            foreach ($result->under($prefix) as $messages) {
+                $errors = array_merge($errors, $messages);
+            }
+        }
+
+        return array_values(array_unique($errors));
+    }
+
+    private function validation(): ValidationResult
+    {
+        return (new TemplateValidator)->validate($this->draft());
     }
 
     /**
@@ -149,6 +232,39 @@ class TemplateEditor extends Component
     }
 
     /**
+     * Remove a component from the toolbar rather than from inside its panel.
+     *
+     * Same effect as the panel's own Remove button; it exists because the
+     * header's "None" option is part of the format switch, which sits outside
+     * the panel it removes — and when the header is absent there is no panel to
+     * press a button in.
+     */
+    public function removeComponent(string $slice): void
+    {
+        $this->componentRemoved($slice);
+    }
+
+    /**
+     * Choose the header format, adding the header if it is not there yet.
+     *
+     * Switching format keeps the text and handle already entered: an operator
+     * flipping between Image and Document to see which reads better should not
+     * lose the caption they wrote. Meta ignores whichever keys the chosen
+     * format does not use, and `TemplateDraft` only emits the relevant ones.
+     */
+    public function setHeaderFormat(string $format): void
+    {
+        $this->state['header'] = [
+            'format' => $format,
+            'text' => $this->state['header']['text'] ?? '',
+            'examples' => $this->state['header']['examples'] ?? [],
+            'handle' => $this->state['header']['handle'] ?? null,
+        ];
+
+        $this->emitChange();
+    }
+
+    /**
      * Hand the host an approval-ready payload plus whether it would be accepted.
      *
      * The payload is emitted even when invalid: a host may want to save a draft
@@ -172,6 +288,7 @@ class TemplateEditor extends Component
     {
         $draft = $this->draft();
         $capabilities = $this->capabilities();
+        $step = $this->step();
 
         return view('wa-templates::livewire.template-editor', [
             'draft' => $draft,
@@ -180,6 +297,9 @@ class TemplateEditor extends Component
             'capabilities' => $capabilities,
             'features' => Feature::cases(),
             'prefilled' => $this->prefilledVariables(),
+            'currentStep' => $step,
+            'steps' => Step::ordered(),
+            'stepErrors' => $this->stepErrors($step),
         ]);
     }
 }

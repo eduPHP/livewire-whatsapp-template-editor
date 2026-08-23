@@ -1,9 +1,20 @@
-<x-wa-templates::form.panel
-    :title="__('Buttons')"
-    :description="__('Up to 10. Quick replies must sit together.')"
-    :invalid="$this->hasErrors()"
->
-    <x-slot:actions>
+<div>
+    <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+            {{ __('Buttons') }}
+            <span class="ml-1 text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                {{ __('up to 10 · quick replies are grouped automatically') }}
+            </span>
+        </h3>
+
+        <span class="shrink-0 text-[11px] tabular-nums text-neutral-400 dark:text-neutral-500">
+            {{ count($buttons) }}/10
+        </span>
+    </div>
+
+    {{-- The type is chosen first and cannot be changed afterwards: each type
+         carries different fields, and Meta treats them as different things. --}}
+    <div class="mb-4 flex flex-wrap gap-2">
         @foreach ($types as $value => $label)
             @php
                 /**
@@ -16,21 +27,31 @@
             @endphp
 
             <x-wa-templates::form.button
+                wire:key="add-button-{{ $value }}"
                 wire:click="add('{{ $value }}')"
                 :disabled="$atLimit || $blocked"
                 :reason="$blocked ? $catalogReason : ($atLimit ? __('A template may have at most 10 buttons.') : null)"
             >
-                + {{ $label }}
+                +{{ $label }}
             </x-wa-templates::form.button>
         @endforeach
-    </x-slot:actions>
+    </div>
 
     @forelse ($buttons as $index => $button)
-        <div wire:key="button-{{ $index }}" class="mb-2 rounded border border-neutral-200 p-2 last:mb-0 dark:border-neutral-800">
-            <div class="mb-2 flex items-center justify-between gap-2">
-                <span class="text-[11px] font-medium uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-                    {{ $types[$button['type']] ?? $button['type'] }}
-                </span>
+        <div wire:key="button-{{ $index }}" class="mb-3 border-t border-neutral-200 pt-3 first:border-t-0 first:pt-0 last:mb-0 dark:border-neutral-800">
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex min-w-0 items-baseline gap-2">
+                    <span class="shrink-0 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-content">
+                        {{ $types[$button['type']] ?? $button['type'] }}
+                    </span>
+
+                    {{-- What the recipient's tap actually does. The type names
+                         alone do not say, and the difference matters: a quick
+                         reply comes back as a message, a URL leaves WhatsApp. --}}
+                    <span class="truncate text-[11px] text-neutral-500 dark:text-neutral-400">
+                        {{ $behaviours[$button['type']] ?? '' }}
+                    </span>
+                </div>
 
                 <div class="flex items-center gap-0.5">
                     <x-wa-templates::form.button
@@ -68,7 +89,7 @@
                 </x-wa-templates::form.field>
             @else
                 <x-wa-templates::form.field
-                    :label="__('Label')"
+                    :label="__('Button text')"
                     :errors="$this->errorsFor('buttons.'.$index.'.text')"
                     :count="mb_strlen((string) $button['text'])"
                     :max="$button['type'] === 'QUICK_REPLY' ? $quickReplyMax : $labelMax"
@@ -133,10 +154,12 @@
             @endif
         </div>
     @empty
-        <p class="text-[11px] text-neutral-500 dark:text-neutral-400">{{ __('No buttons yet.') }}</p>
+        <p class="rounded-lg border border-dashed border-neutral-300 px-3 py-4 text-center text-[11px] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+            {{ __('No buttons. The message is sent as text alone.') }}
+        </p>
     @endforelse
 
     @foreach ($this->errorsFor('buttons') as $error)
         <p class="mt-2 text-[11px] text-red-600 dark:text-red-400">{{ $error }}</p>
     @endforeach
-</x-wa-templates::form.panel>
+</div>

@@ -239,14 +239,112 @@ class BodyPanel extends Panel
         return $renamed;
     }
 
+    /**
+     * Whether the text is written with named variables rather than numbered.
+     *
+     * A body with no variables at all counts as named: that is the format the
+     * "+ Variable" button will produce, so the switch shows what the operator
+     * would get rather than a default they never chose.
+     */
+    public function usesNamedVariables(): bool
+    {
+        $keys = $this->parameterKeys();
+
+        if ($keys === []) {
+            return true;
+        }
+
+        return ! ctype_digit($keys[0]);
+    }
+
+    /**
+     * Rewrite the text's variables as `{{1}}`, `{{2}}`, … in the order they
+     * appear.
+     *
+     * The examples follow the rename, so switching format never costs the
+     * operator the samples they typed. A pre-filled variable blocks the switch
+     * entirely: its name is the contract with the sending code, and numbering
+     * it would leave a placeholder nothing fills.
+     */
+    public function useNumberedVariables(): void
+    {
+        $keys = $this->parameterKeys();
+
+        if ($keys === [] || $this->usesNamedVariables() === false) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            if ($this->isPrefilled($key)) {
+                $this->addError('format', __('This message uses a variable the app fills by name, which cannot be numbered.'));
+
+                return;
+            }
+        }
+
+        $this->resetErrorBag('format');
+        $this->renumber($keys, fn (int $position): string => (string) $position);
+    }
+
+    /**
+     * Rewrite numbered variables back to names.
+     *
+     * There is no original name to restore — `{{1}}` never carried one — so
+     * they become `variavel`, `variavel_2`, …, which is what "+ Variable" would
+     * have produced. The operator renames from there.
+     */
+    public function useNamedVariables(): void
+    {
+        $keys = $this->parameterKeys();
+
+        if ($keys === [] || $this->usesNamedVariables()) {
+            return;
+        }
+
+        $this->resetErrorBag('format');
+        $this->renumber($keys, fn (int $position): string => $position === 1 ? 'variavel' : 'variavel_'.$position);
+    }
+
+    /**
+     * Rewrite every variable to a new name derived from its position.
+     *
+     * Done in two passes through placeholders that cannot collide with either
+     * vocabulary: renaming `{{1}}`→`{{variavel}}` in one pass would let a later
+     * rename find and clobber the name an earlier one just wrote.
+     *
+     * @param  list<string>  $keys
+     * @param  callable(int): string  $name
+     */
+    private function renumber(array $keys, callable $name): void
+    {
+        $renamed = [];
+        $examples = [];
+
+        foreach (array_values($keys) as $index => $key) {
+            $to = $name($index + 1);
+            $placeholder = "\0{$index}\0";
+
+            $this->text = str_replace('{{'.$key.'}}', $placeholder, $this->text);
+            $renamed[$placeholder] = '{{'.$to.'}}';
+            $examples[$to] = $this->examples[$key] ?? '';
+        }
+
+        $this->text = str_replace(array_keys($renamed), array_values($renamed), $this->text);
+        $this->examples = $examples;
+
+        $this->publish();
+    }
+
     public function render(): View
     {
         return view('wa-templates::livewire.panels.body-panel', [
             'keys' => $this->parameterKeys(),
             'available' => $this->availablePrefilled(),
             'max' => TemplateValidator::BODY_MAX,
+            'named' => $this->usesNamedVariables(),
             /** Blade cannot assemble a literal `{{…}}` inline; see .ai/rules. */
             'variableSyntax' => '{{nome}}',
+            'numberedExample' => '{{1}}',
         ]);
     }
 }

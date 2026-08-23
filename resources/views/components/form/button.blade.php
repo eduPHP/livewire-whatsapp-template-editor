@@ -10,8 +10,12 @@
     @disabled($disabled)
     @if ($disabled && $reason) title="{{ $reason }}" @endif
     {{ $attributes->merge(['class' => 'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 '.match ($variant) {
-        'primary' => 'bg-neutral-900 text-white hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200',
+        'primary' => 'bg-accent text-accent-foreground hover:opacity-90',
         'danger' => 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10',
+        /** The chosen option in a segmented switch: outlined in the accent
+            rather than filled with it, so it does not read as the step's
+            primary action the way Continue does. */
+        'selected' => 'border border-accent bg-accent/10 text-accent-content',
         default => 'border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800',
     }]) }}
 >

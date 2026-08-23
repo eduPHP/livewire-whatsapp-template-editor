@@ -6,15 +6,18 @@ use Illuminate\Contracts\View\View;
 use Livewire\WithFileUploads;
 use WaTemplates\Contracts\MediaUploader;
 use WaTemplates\Draft\Parameter;
-use WaTemplates\Enums\HeaderFormat;
 use WaTemplates\Validation\TemplateValidator;
 
 /**
- * The format switch and whichever fields that format needs.
+ * Whichever fields the chosen header format needs.
+ *
+ * The format itself is chosen outside this panel, by the editor's segmented
+ * switch: "none" is one of its options, and a panel cannot offer the choice
+ * that removes it. This renders the fields for the format already set.
  *
  * Media formats are gated on a `MediaUploader`: without one there is no way to
- * turn a file into the `header_handle` Meta requires, so those options are
- * disabled with that reason rather than hidden.
+ * turn a file into the `header_handle` Meta requires, which is why the switch
+ * disables those options with that reason rather than hiding them.
  */
 class HeaderPanel extends Panel
 {
@@ -162,7 +165,6 @@ class HeaderPanel extends Panel
     public function render(): View
     {
         return view('wa-templates::livewire.panels.header-panel', [
-            'formats' => HeaderFormat::cases(),
             'keys' => Parameter::keysIn($this->text),
             'max' => TemplateValidator::HEADER_TEXT_MAX,
             /** Blade cannot assemble a literal `{{…}}` inline; see .ai/rules. */

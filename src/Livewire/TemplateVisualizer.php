@@ -28,11 +28,29 @@ class TemplateVisualizer extends Component
 
     public bool $keyboard = false;
 
-    public function mount(array $template = [], ?string $contactName = null, bool $keyboard = false): void
-    {
+    /**
+     * Whether to draw the device shell around the bubble.
+     *
+     * The editor sets this false: beside a form the phone is decoration
+     * competing with the fields for width, and the operator is reading the
+     * message, not judging the hardware. A connection screen showing an
+     * approved template keeps it — there the phone is the whole point.
+     *
+     * Chrome-less also drops the keyboard toggle and the reset control, which
+     * are affordances for the mocked conversation the shell hosts.
+     */
+    public bool $chrome = true;
+
+    public function mount(
+        array $template = [],
+        ?string $contactName = null,
+        bool $keyboard = false,
+        bool $chrome = true,
+    ): void {
         $this->template = $template;
         $this->contactName = $contactName ?? $this->contactName;
         $this->keyboard = $keyboard;
+        $this->chrome = $chrome;
     }
 
     public function render(): View
