@@ -1,0 +1,37 @@
+{
+  "name": "abandoned_cart",
+  "language": "en_US",
+  "category": "MARKETING",
+  "components": [
+    {
+      "type": "HEADER",
+      "format": "TEXT",
+      "text": "Forget something, {{1}}?",
+      "example": {
+        "header_text": [
+          "Pablo"
+        ]
+      }
+    },
+    {
+      "type": "BODY",
+      "text": "Looks like you left these items in your cart, still interested? Use code {{1}} to get 10% off!",
+      "example": {
+        "body_text": [
+          [
+            "10OFF"
+          ]
+        ]
+      }
+    },
+    {
+      "type": "BUTTONS",
+      "buttons": [
+        {
+          "type": "MPM",
+          "text": "View items"
+        }
+      ]
+    }
+  ]
+}

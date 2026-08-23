@@ -1,0 +1,46 @@
+{
+    "name": "wa-connect/wa-templates",
+    "description": "Livewire editor and visualizer for WhatsApp Business message templates.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "illuminate/contracts": "^13.0",
+        "illuminate/support": "^13.0"
+    },
+    "require-dev": {
+        "livewire/livewire": "^4.0",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.0"
+    },
+    "suggest": {
+        "livewire/livewire": "Required for the editor and visualizer components; the domain layer runs headless without it."
+    },
+    "autoload": {
+        "psr-4": {
+            "WaTemplates\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WaTemplates\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "WaTemplates\\TemplatesServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

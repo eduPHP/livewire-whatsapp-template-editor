@@ -1,0 +1,115 @@
+{
+  "name": "carousel_template_media_cards_v1",
+  "language": "en_US",
+  "category": "marketing",
+  "components": [
+    {
+      "type": "body",
+      "text": "Rare succulents for sale! {{1}}, add these unique plants to your collection. Each of these rare succulents are {{2}} if you checkout using code {{3}}. Shop now and add some unique and beautiful plants to your collection!",
+      "example": {
+        "body_text": [
+          [
+            "Pablo",
+            "30%",
+            "30OFF"
+          ]
+        ]
+      }
+    },
+    {
+      "type": "carousel",
+      "cards": [
+        {
+          "components": [
+            {
+              "type": "header",
+              "format": "image",
+              "example": {
+                "header_handle": [
+                  "4::an..."
+                ]
+              }
+            },
+            {
+              "type": "buttons",
+              "buttons": [
+                {
+                  "type": "quick_reply",
+                  "text": "Send me more like this!"
+                },
+                {
+                  "type": "url",
+                  "text": "Shop",
+                  "url": "https://www.luckyshrub.com/rare-succulents/{{1}}",
+                  "example": [
+                    "BLUE_ELF"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "type": "header",
+              "format": "image",
+              "example": {
+                "header_handle": [
+                  "4::an..."
+                ]
+              }
+            },
+            {
+              "type": "buttons",
+              "buttons": [
+                {
+                  "type": "quick_reply",
+                  "text": "Send me more like this!"
+                },
+                {
+                  "type": "url",
+                  "text": "Shop",
+                  "url": "https://www.luckyshrub.com/rare-succulents{{1}}",
+                  "example": [
+                    "BUDDHA"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "type": "header",
+              "format": "image",
+              "example": {
+                "header_handle": [
+                  "4::an..."
+                ]
+              }
+            },
+            {
+              "type": "buttons",
+              "buttons": [
+                {
+                  "type": "quick_reply",
+                  "text": "Send me more like this!"
+                },
+                {
+                  "type": "url",
+                  "text": "Shop",
+                  "url": "https://www.luckyshrub.com/rare-succulents{{1}}",
+                  "example": [
+                    "BLACK_PRINCE"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
