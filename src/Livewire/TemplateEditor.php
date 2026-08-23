@@ -53,12 +53,25 @@ class TemplateEditor extends Component
     public string $step = 'identification';
 
     /**
+     * The language a NEW template starts in, as a Meta language code.
+     *
+     * Only the starting value: a `$template` passed in keeps whatever language
+     * it already carries, and an unparseable one still falls back to `en_US` in
+     * the domain layer. A host serving one market opens the editor on that
+     * market's language instead of making every operator change it first.
+     *
+     * Not validated against the picker's shortlist — Meta accepts roughly
+     * eighty codes and the list is deliberately short, so a host passing an
+     * unlisted one gets it as a rendered option rather than a silent reset.
+     *
      * @param  array<string,mixed>|null  $template  A Meta create request, or its bare `components` array.
      */
-    public function mount(?array $template = null): void
+    public function mount(?array $template = null, ?string $language = null): void
     {
         $this->state = DraftState::fromDraft(
-            $template === null ? new TemplateDraft : DraftState::parse($template),
+            $template === null
+                ? new TemplateDraft(language: $language ?? 'en_US')
+                : DraftState::parse($template),
         );
 
         $this->emitChange();
