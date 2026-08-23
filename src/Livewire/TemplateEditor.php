@@ -8,6 +8,7 @@ use Livewire\Component;
 use WaTemplates\Capabilities\Capabilities;
 use WaTemplates\Capabilities\Feature;
 use WaTemplates\Contracts\CatalogSource;
+use WaTemplates\Contracts\ClosedVariableSource;
 use WaTemplates\Contracts\MediaUploader;
 use WaTemplates\Contracts\PrefilledVariable;
 use WaTemplates\Contracts\VariableSource;
@@ -132,7 +133,62 @@ class TemplateEditor extends Component
 
     private function validation(): ValidationResult
     {
-        return (new TemplateValidator)->validate($this->draft());
+        return $this->validator()->validate($this->draft());
+    }
+
+    /**
+     * A validator that knows which variable names this installation can fill.
+     *
+     * Built here rather than instantiated at each call site so the step gate,
+     * the emitted event and the rendered errors cannot disagree about whether
+     * an invented variable is allowed — three `new TemplateValidator` calls with
+     * different arguments would let Continue pass what Submit refuses.
+     */
+    private function validator(): TemplateValidator
+    {
+        return new TemplateValidator($this->allowedVariables());
+    }
+
+    /**
+     * The only variable names allowed, or null when the operator may invent one.
+     *
+     * Null unless the host bound a `ClosedVariableSource`: declaring variables
+     * makes them available, and only the closed marker turns availability into
+     * exclusivity.
+     *
+     * @return list<string>|null
+     */
+    public function allowedVariables(): ?array
+    {
+        if (! $this->hasClosedVariableSet()) {
+            return null;
+        }
+
+        return array_keys($this->prefilledVariables());
+    }
+
+    /**
+     * Whether the host declared its variable set the only set.
+     */
+    public function hasClosedVariableSet(): bool
+    {
+        return app()->bound(VariableSource::class)
+            && app(VariableSource::class) instanceof ClosedVariableSource;
+    }
+
+    /**
+     * Why custom variables are unavailable, or null when they are allowed.
+     *
+     * A stated reason rather than a silently missing button, for the same
+     * reason `Capabilities::reasonAgainst()` gives one: a hidden control reads
+     * as a feature that does not exist, while a disabled one tells the operator
+     * what is going on.
+     */
+    public function customVariableReason(): ?string
+    {
+        return $this->hasClosedVariableSet()
+            ? __('This app fills variables by name, so only the variables it offers can be used.')
+            : null;
     }
 
     /**
@@ -274,7 +330,7 @@ class TemplateEditor extends Component
     private function emitChange(): void
     {
         $draft = $this->draft();
-        $result = (new TemplateValidator)->validate($draft);
+        $result = $this->validator()->validate($draft);
 
         $this->dispatch(
             'template-changed',
@@ -293,10 +349,11 @@ class TemplateEditor extends Component
         return view('wa-templates::livewire.template-editor', [
             'draft' => $draft,
             'preview' => (new TemplateRenderer)->render($draft),
-            'errors' => (new TemplateValidator)->validate($draft),
+            'errors' => $this->validator()->validate($draft),
             'capabilities' => $capabilities,
             'features' => Feature::cases(),
             'prefilled' => $this->prefilledVariables(),
+            'customVariableReason' => $this->customVariableReason(),
             'currentStep' => $step,
             'steps' => Step::ordered(),
             'stepErrors' => $this->stepErrors($step),

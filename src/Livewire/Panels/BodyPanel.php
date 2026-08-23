@@ -33,20 +33,39 @@ class BodyPanel extends Panel
     public array $prefilled = [];
 
     /**
-     * @param  array<string,mixed>  $values
-     * @param  array<string,list<string>>  $errors
+     * Why a custom variable cannot be added, or null when one can.
+     *
+     * A reason STRING rather than the `ClosedVariableSource` itself, for the
+     * same reason `$mediaReason`/`$catalogReason` are strings: Livewire
+     * serializes public properties to the browser and back, and an
+     * interface-holding object does not survive the trip.
      */
+    public ?string $customVariableReason = null;
+
     /**
      * @param  array<string,mixed>  $values
      * @param  array<string,list<string>>  $errors
      * @param  array<string,string>  $prefilled
      */
-    public function mount(array $values = [], array $errors = [], array $prefilled = []): void
-    {
+    public function mount(
+        array $values = [],
+        array $errors = [],
+        array $prefilled = [],
+        ?string $customVariableReason = null,
+    ): void {
         $this->text = (string) ($values['text'] ?? '');
         $this->examples = array_map('strval', $values['examples'] ?? []);
         $this->panelErrors = $errors;
         $this->prefilled = $prefilled;
+        $this->customVariableReason = $customVariableReason;
+    }
+
+    /**
+     * Whether the host declared its offered variables the only ones allowed.
+     */
+    public function allowsCustomVariables(): bool
+    {
+        return $this->customVariableReason === null;
     }
 
     /**
@@ -107,6 +126,17 @@ class BodyPanel extends Panel
      */
     public function addVariable(): void
     {
+        /**
+         * A closed set means the host fills every variable by name and has no
+         * way to fill an invented one. The view hides both affordances, but the
+         * check belongs here too: `wire:click` is reachable from the console,
+         * and a variable added that way would reach Meta as a placeholder
+         * nothing fills.
+         */
+        if (! $this->allowsCustomVariables()) {
+            return;
+        }
+
         $name = $this->uniqueVariableName();
 
         $this->text = rtrim($this->text).' {{'.$name.'}}';
@@ -152,6 +182,18 @@ class BodyPanel extends Panel
          * review carrying a placeholder that arrives empty on every send.
          */
         if ($this->isPrefilled($from)) {
+            return;
+        }
+
+        /**
+         * With a closed set every legal name is already reserved, so a rename
+         * can only ever land outside it. Refused with the reason rather than
+         * silently reverted, so the operator is not left retyping a name that
+         * keeps snapping back.
+         */
+        if (! $this->allowsCustomVariables()) {
+            $this->addError('rename.'.$from, (string) $this->customVariableReason);
+
             return;
         }
 
@@ -301,6 +343,17 @@ class BodyPanel extends Panel
             return;
         }
 
+        /**
+         * The names this produces (`variavel`, `variavel_2`, …) are invented,
+         * so a closed set refuses the switch for the same reason it refuses
+         * "+ Variable".
+         */
+        if (! $this->allowsCustomVariables()) {
+            $this->addError('format', (string) $this->customVariableReason);
+
+            return;
+        }
+
         $this->resetErrorBag('format');
         $this->renumber($keys, fn (int $position): string => $position === 1 ? 'variavel' : 'variavel_'.$position);
     }
@@ -342,6 +395,7 @@ class BodyPanel extends Panel
             'available' => $this->availablePrefilled(),
             'max' => TemplateValidator::BODY_MAX,
             'named' => $this->usesNamedVariables(),
+            'allowsCustom' => $this->allowsCustomVariables(),
             /** Blade cannot assemble a literal `{{…}}` inline; see .ai/rules. */
             'variableSyntax' => '{{nome}}',
             'numberedExample' => '{{1}}',

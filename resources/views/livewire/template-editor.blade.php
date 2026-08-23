@@ -79,6 +79,7 @@
                     :values="$state['body'] ?? []"
                     :errors="$errors->errors"
                     :prefilled="$prefilled"
+                    :custom-variable-reason="$customVariableReason"
                     :key="'body'"
                 />
             @elseif ($currentStep === Step::Buttons)

@@ -38,12 +38,42 @@ public function handle(array $payload, bool $valid, array $errors): void
 }
 ```
 
+**The parameter names are the contract, not their order.** The event is
+dispatched with named parameters (`payload:`, `valid:`, `errors:`), and Livewire
+spreads them into your listener by name. So a listener may take any subset in any
+order — `handle(bool $valid, array $payload)` works — but renaming one to
+`$data` binds nothing.
+
+> Never name a listener parameter `$component`. Livewire resolves it as a
+> container dependency instead of binding the value, and throws
+> `BindingResolutionException` on every real browser request while
+> `Livewire::test()` passes.
+
+The payload is emitted even when `$valid` is false, so you can save a draft an
+operator is still working on.
+
+### Submitting
+
 The package never submits. It produces the payload; you decide when and how to
 send it. That keeps credentials, workspace scoping, and any duplicate-name rules
 on your side, where they belong.
 
-The payload is emitted even when `$valid` is false, so you can save a draft an
-operator is still working on.
+The last wizard step still needs a submit button, and it lives inside the editor
+because that is where the flow ends. It only *asks*: pressing it dispatches
+`template-submit` with no parameters, and your component decides what that means.
+
+```php
+#[On('template-submit')]
+public function submit(CloudTemplateCreator $creator): void
+{
+    // Nothing is sent until you send it. $this->payload is the last
+    // `template-changed` you stored.
+}
+```
+
+The button is disabled while the template is invalid, but treat that as a
+convenience rather than a guarantee — re-check the `$valid` you stored before
+sending.
 
 ### Visualizer
 
@@ -61,7 +91,7 @@ substituted.
 
 ## Capabilities
 
-Two optional interfaces. Bind whichever you have; an unbound one disables the
+Optional interfaces. Bind whichever you have; an unbound one disables the
 components that need it **with a stated reason** rather than hiding them.
 
 | Interface | Unlocks |
@@ -69,6 +99,7 @@ components that need it **with a stated reason** rather than hiding them.
 | `WaTemplates\Contracts\MediaUploader` | Media headers, media carousels, limited-time offers |
 | `WaTemplates\Contracts\CatalogSource` | Product list (MPM) buttons, product carousels |
 | `WaTemplates\Contracts\VariableSource` | Pre-filled variables in the "+ Variable" picker |
+| `WaTemplates\Contracts\ClosedVariableSource` | The above, *and* forbids inventing any other variable |
 
 ```php
 $this->app->bind(MediaUploader::class, ResumableUploader::class);
@@ -106,6 +137,50 @@ other example.
 Declaring a variable only makes it *available*. A template need not use it, and
 an unused one appears nowhere in the payload. A pre-filled variable cannot be
 renamed in the editor — its name is the contract your sending code matches on.
+
+### Closing the set
+
+`VariableSource` is additive: it offers names, but the body is a free textarea
+and an operator can still type `{{preco}}`. If your sending code substitutes
+strictly by name — every value comes from a known column, nothing is looked up
+at send time — that invented variable reaches Meta as a placeholder nothing
+fills, and arrives empty on every send.
+
+Implement `ClosedVariableSource` to declare your set the **only** set:
+
+```php
+class AppVariables implements ClosedVariableSource
+{
+    public function variables(): array
+    {
+        return [new PrefilledVariable('nome_contato', 'Ana Souza')];
+    }
+}
+```
+
+It extends `VariableSource` and adds no methods — bind it under the same
+`VariableSource::class` key. The editor then:
+
+- hides both "+ Variable" affordances, stating why rather than leaving a gap;
+- makes `addVariable()` and `renameVariable()` no-ops, so the set holds even
+  against a `wire:click` fired from the console;
+- disables the switch to named variables, whose generated names are invented;
+- **validates** any hand-typed variable outside the set, keyed at
+  `body.examples.<name>` so the error lands on that variable's own row.
+
+The last one matters: the editor cannot stop the typing, so the *validator* is
+what makes the set closed. An out-of-set name fails `$valid`, which blocks the
+step gate and the submit button.
+
+Headless users get the same rule by passing the allowed names to the validator
+directly:
+
+```php
+new TemplateValidator(['nome_contato', 'nome_salao']);
+```
+
+With no argument — the default — any name is allowed, which is what plain
+`VariableSource` and no capability at all both mean.
 
 ## Component reference
 

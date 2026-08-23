@@ -78,20 +78,37 @@
                             </button>
                         @endforeach
 
-                        <button
-                            type="button"
-                            wire:click="addVariable"
-                            x-on:click="open = false"
-                            class="w-full border-t border-neutral-200 px-2 py-1.5 text-left text-[11px] text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
-                        >
-                            {{ __('Custom variable…') }}
-                        </button>
+                        @if ($allowsCustom)
+                            <button
+                                type="button"
+                                wire:click="addVariable"
+                                x-on:click="open = false"
+                                class="w-full border-t border-neutral-200 px-2 py-1.5 text-left text-[11px] text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800"
+                            >
+                                {{ __('Custom variable…') }}
+                            </button>
+                        @else
+                            {{-- Stated rather than simply missing: a hidden
+                                 control reads as a feature that does not exist,
+                                 while the reason tells the operator why the
+                                 offered names are the whole list. --}}
+                            <p class="border-t border-neutral-200 px-2 py-1.5 text-[10px] leading-relaxed text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                                {{ $customVariableReason }}
+                            </p>
+                        @endif
                     </div>
                 </div>
-            @else
+            @elseif ($allowsCustom)
                 <x-wa-templates::form.button wire:click="addVariable" class="shrink-0">
                     + {{ __('Variable') }}
                 </x-wa-templates::form.button>
+            @else
+                {{-- Closed set, nothing left to offer: every declared variable
+                     is already in the text. The reason stays visible so the
+                     absent button is explained rather than merely gone. --}}
+                <span class="shrink-0 text-[11px] text-neutral-500 dark:text-neutral-400">
+                    {{ $customVariableReason }}
+                </span>
             @endif
         </div>
 
@@ -112,7 +129,10 @@
                             <input
                                 type="text"
                                 value="{{ $key }}"
-                                @readonly($this->isPrefilled($key))
+                                {{-- Read-only under a closed set too: every legal
+                                     name is already reserved, so a rename could
+                                     only ever land outside the set. --}}
+                                @readonly($this->isPrefilled($key) || ! $allowsCustom)
                                 wire:change="renameVariable('{{ $key }}', $event.target.value)"
                                 class="w-40 shrink-0 rounded border border-transparent bg-accent/10 px-2 py-1.5 font-mono text-[11px] text-accent-content outline-none read-only:opacity-70 focus:border-accent focus:bg-white dark:focus:bg-neutral-900"
                                 aria-label="{{ __('Variable name') }}"
@@ -192,6 +212,8 @@
             <x-wa-templates::form.button
                 wire:click="useNamedVariables"
                 :variant="$named ? 'selected' : 'secondary'"
+                :disabled="! $allowsCustom && ! $named"
+                :reason="! $allowsCustom && ! $named ? $customVariableReason : null"
                 class="font-mono"
             >@php echo e(sprintf('{{%s}}', __('name'))) @endphp</x-wa-templates::form.button>
 
