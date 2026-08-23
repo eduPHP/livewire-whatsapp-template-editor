@@ -232,7 +232,7 @@
         type="button"
         x-on:click="preview = true"
         x-show="! preview"
-        class="fixed inset-x-4 bottom-4 z-30 flex items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 text-sm font-medium text-white shadow-lg lg:hidden dark:bg-white dark:text-neutral-900"
+        class="sticky bottom-4 z-30 flex w-full items-center justify-center gap-2 rounded-full bg-neutral-900 px-4 py-3 text-sm font-medium text-white shadow-lg lg:hidden dark:bg-white dark:text-neutral-900"
     >
         <svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm5 17.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8 4v12h8V4H8Z" />

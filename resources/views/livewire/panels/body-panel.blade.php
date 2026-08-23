@@ -73,7 +73,7 @@
                                 x-on:click="open = false"
                                 class="flex w-full items-center justify-between gap-2 px-2 py-1.5 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800"
                             >
-                                <span class="font-mono text-[11px] text-accent-content">{{ $name }}</span>
+                                <span class="font-mono text-[11px] text-accent-text">{{ $name }}</span>
                                 <span class="truncate text-[10px] text-neutral-400 dark:text-neutral-500">{{ $sample }}</span>
                             </button>
                         @endforeach
@@ -134,7 +134,7 @@
                                      only ever land outside the set. --}}
                                 @readonly($this->isPrefilled($key) || ! $allowsCustom)
                                 wire:change="renameVariable('{{ $key }}', $event.target.value)"
-                                class="w-40 shrink-0 rounded border border-transparent bg-accent/10 px-2 py-1.5 font-mono text-[11px] text-accent-content outline-none read-only:opacity-70 focus:border-accent focus:bg-white dark:focus:bg-neutral-900"
+                                class="w-40 shrink-0 rounded border border-transparent bg-accent/10 px-2 py-1.5 font-mono text-[11px] text-accent-text outline-none read-only:opacity-70 focus:border-accent focus:bg-white dark:focus:bg-neutral-900"
                                 aria-label="{{ __('Variable name') }}"
                             >
 

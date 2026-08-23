@@ -37,6 +37,44 @@ the package's views in your stylesheet:
 **A missed `@source` renders the phone mock unstyled**, which is a confusing
 first-run failure rather than an obvious one.
 
+### The accent tokens
+
+The editor paints its accents from three CSS variables, which the host defines
+because the host owns the palette:
+
+```css
+@theme {
+    --color-accent: var(--color-emerald-600);       /* fills, borders */
+    --color-accent-foreground: var(--color-white);  /* label ON an accent fill */
+    --color-accent-text: var(--color-emerald-600);  /* accent text on a neutral panel */
+}
+
+/* The mint has to lighten in dark mode; the fill does not. */
+.dark, [data-theme='your-dark-theme'] {
+    --color-accent-text: var(--color-emerald-400);
+}
+```
+
+`--color-accent-text` is deliberately not named `--color-accent-content`:
+daisyUI defines that one to mean the opposite — the near-black label drawn *on*
+an accent fill — and emits it after the host's own `@theme`, so the host's
+value loses the cascade and accent text renders near-black on a dark panel.
+
+The form controls name both halves of their palette and carry a matching
+`color-scheme`, so the native chrome a browser paints itself — a `<select>`'s
+popup above all — follows the theme rather than defaulting to light. They rely
+on the host resolving Tailwind's `dark:` variant; a host keying dark mode off
+something other than `.dark` must teach Tailwind about it, e.g.
+
+```css
+@custom-variant dark (&:where(.dark, .dark *, [data-theme='my-dark'], [data-theme='my-dark'] *));
+```
+
+**The editor grows to its content and expects its container to scroll.** It
+sets no height cap of its own, so a host embedding it in a modal must give
+that dialog the height limit and `overflow-y-auto` — otherwise the form runs
+past the bottom of a phone viewport with no way to reach it.
+
 ## Use
 
 The editor is a black box with two openings: an optional existing template in,

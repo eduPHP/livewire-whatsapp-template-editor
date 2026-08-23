@@ -41,7 +41,7 @@
         <div wire:key="button-{{ $index }}" class="mb-3 border-t border-neutral-200 pt-3 first:border-t-0 first:pt-0 last:mb-0 dark:border-neutral-800">
             <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex min-w-0 items-baseline gap-2">
-                    <span class="shrink-0 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-content">
+                    <span class="shrink-0 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent-text">
                         {{ $types[$button['type']] ?? $button['type'] }}
                     </span>
 
