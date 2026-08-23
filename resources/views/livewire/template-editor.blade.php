@@ -6,8 +6,22 @@
     $catalogReason = $capabilities->reasonAgainst(Feature::MultiProduct);
 @endphp
 
+{{--
+    `submitting` tracks a request this component does not make. Submission is
+    the host's: this editor only dispatches `template-submit` and the host
+    decides, calls Meta, and comes back. So the flag is raised on the click and
+    lowered by `template-submit-settled`, which the host emits on every exit —
+    success, refusal, or a payload it declined to send. An editor that raised it
+    and waited for a re-render would stay spinning forever on the paths where
+    the host answers without changing anything here.
+
+    The listener is bound to this root, NOT `.window`: the host addresses the
+    event to this component by name, and Livewire delivers those directly to the
+    component's own element without bubbling.
+--}}
 <div
-    x-data="{ preview: false }"
+    x-data="{ preview: false, submitting: false }"
+    x-on:template-submit-settled="submitting = false"
     class="wa-templates-editor grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]"
 >
     <div class="min-w-0">
@@ -215,9 +229,11 @@
                      `TemplateCreator` listens for. --}}
                 <x-wa-templates::form.button
                     variant="primary"
-                    x-on:click="$dispatch('template-submit')"
+                    x-on:click="submitting = true; $dispatch('template-submit')"
                     :disabled="$errors->fails()"
                     :reason="$errors->fails() ? __('Some steps still need attention.') : null"
+                    loading-when="submitting"
+                    :loading-label="__('Submitting…')"
                 >
                     {{ __('Submit for approval') }}
                 </x-wa-templates::form.button>

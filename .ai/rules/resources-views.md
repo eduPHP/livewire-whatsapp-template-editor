@@ -20,3 +20,12 @@ Braces inside a PHP string in a `:attr` expression (e.g. `:placeholder="__('Hi {
 Bind the whole value instead: `:aria-pressed="$c ? 'true' : 'false'"`, or for a plain HTML element `aria-current="{{ $c ? 'step' : 'false' }}"`.
 
 This is a sibling of the literal-braces trap already recorded here: both are cases where an expression that reads fine in Blade fails only at compile time, and only inside a component tag.
+
+## A button whose work belongs to the host tracks its own state in Alpine
+The submit button dispatches `template-submit` and the HOST calls Meta. Livewire's automatic disable-while-in-flight only covers controls that STARTED the request, so this button is invisible to it — several silent seconds during which a second click submits the template twice.
+
+`form.button`'s `loading-when` therefore takes an ALPINE EXPRESSION, not a PHP boolean: the flag is raised by the same click that starts the work, and no server render stands between the two. Both label and spinner are rendered with Alpine choosing, so the plain label still survives without JS.
+
+The flag is lowered ONLY by `template-submit-settled`, which the host emits on every exit — success, refusal, and the payload it declined to send. The editor cannot lower it itself: on the paths where the host answers without re-rendering anything here, a button waiting for a re-render spins forever.
+
+The listener sits on the editor root, not `.window` — the host addresses the event with `->to('wa-template-editor')`, and Livewire delivers those straight to the component's element without bubbling.

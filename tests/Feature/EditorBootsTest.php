@@ -58,3 +58,28 @@ it('carries a language code the picker does not list', function () {
     Livewire::test(TemplateEditor::class, ['language' => 'ja'])
         ->assertSet('state.meta.language', 'ja');
 });
+
+it('shows the submit button working while the host completes the submission', function () {
+    // The editor does not submit: it dispatches `template-submit` and the host
+    // calls Meta. That means Livewire's disable-while-in-flight never covers
+    // this button — the request it starts belongs to another component — so the
+    // button tracks its own state in Alpine, raised on the click.
+    //
+    // Without it the operator gets several silent seconds and clicks again,
+    // submitting the template twice.
+    $rendered = Livewire::test(TemplateEditor::class)
+        ->set('step', 'framing')
+        ->html();
+
+    expect($rendered)->toContain("submitting = true; \$dispatch('template-submit')");
+
+    // Both labels ship and Alpine picks, so a button mid-submission never still
+    // reads "Submit for approval" — the text that invites the second click.
+    expect($rendered)->toContain('Submit for approval');
+    expect($rendered)->toContain('Submitting…');
+
+    // Nothing but the host's reply lowers the flag. It is addressed to this
+    // component, so the listener is on the root rather than `.window`.
+    expect($rendered)->toContain('x-on:template-submit-settled="submitting = false"');
+    expect($rendered)->toContain('x-bind:disabled="submitting"');
+});
