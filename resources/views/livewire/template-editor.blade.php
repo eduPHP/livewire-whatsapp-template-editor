@@ -223,10 +223,17 @@
                 >
                     {{ __('Continue') }}
                 </x-wa-templates::form.button>
-            @else
+            @elseif ($submit)
                 {{-- The last step carries the submit. The host owns the action,
                      so this only asks for it: `template-submit` is what
-                     `TemplateCreator` listens for. --}}
+                     `TemplateCreator` listens for.
+
+                     DRAWN ONLY WHEN THE HOST HAS NOWHERE ELSE TO PUT IT. A host
+                     embedding the editor in its own dialog already has a
+                     footer, and drawing this one beside it gives the operator
+                     two primary buttons and no way to tell which is the real
+                     one. `:submit="false"` is that host saying it owns the
+                     action; the event contract is unchanged either way. --}}
                 <x-wa-templates::form.button
                     variant="primary"
                     x-on:click="submitting = true; $dispatch('template-submit')"

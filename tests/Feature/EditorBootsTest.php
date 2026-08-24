@@ -83,3 +83,29 @@ it('shows the submit button working while the host completes the submission', fu
     expect($rendered)->toContain('x-on:template-submit-settled="submitting = false"');
     expect($rendered)->toContain('x-bind:disabled="submitting"');
 });
+
+it('lets a host with its own footer turn the submit button off', function () {
+    // Two primary buttons on one screen is not a redundancy — it is a question
+    // about which one the operator is answering. A host embedding the editor in
+    // its own dialog already draws a footer, so it says so and keeps one.
+    $rendered = Livewire::test(TemplateEditor::class, ['submit' => false])
+        ->set('step', 'framing')
+        ->html();
+
+    expect($rendered)->not->toContain("\$dispatch('template-submit')");
+    expect($rendered)->not->toContain('Submit for approval');
+
+    // The step itself is untouched: only the button goes.
+    expect($rendered)->toContain('Back');
+});
+
+it('draws the submit button when the host says nothing', function () {
+    // The default is on. A host that embeds the editor bare has nowhere else to
+    // put it, and a wizard ending on a step with no way out is the worse
+    // failure of the two.
+    $rendered = Livewire::test(TemplateEditor::class)
+        ->set('step', 'framing')
+        ->html();
+
+    expect($rendered)->toContain('Submit for approval');
+});

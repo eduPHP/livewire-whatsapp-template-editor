@@ -53,6 +53,21 @@ class TemplateEditor extends Component
     public string $step = 'identification';
 
     /**
+     * Whether the last step draws the submit button.
+     *
+     * True by default: a host that embeds the editor bare has nowhere else to
+     * put it, and the wizard ending on a step with no way out is the worse
+     * failure. A host with its own footer chrome passes false and keeps ONE
+     * decision point — two submit buttons on one screen is not a redundancy,
+     * it is a question about which one the operator is answering.
+     *
+     * Turning it off does not change the contract: `template-submit` is still
+     * the only way this package asks to be submitted, and a host that draws its
+     * own button either dispatches that event or calls its own action directly.
+     */
+    public bool $submit = true;
+
+    /**
      * The language a NEW template starts in, as a Meta language code.
      *
      * Only the starting value: a `$template` passed in keeps whatever language
@@ -65,9 +80,12 @@ class TemplateEditor extends Component
      * unlisted one gets it as a rendered option rather than a silent reset.
      *
      * @param  array<string,mixed>|null  $template  A Meta create request, or its bare `components` array.
+     * @param  bool  $submit  Whether the last step draws its own submit button.
      */
-    public function mount(?array $template = null, ?string $language = null): void
+    public function mount(?array $template = null, ?string $language = null, bool $submit = true): void
     {
+        $this->submit = $submit;
+
         $this->state = DraftState::fromDraft(
             $template === null
                 ? new TemplateDraft(language: $language ?? 'en_US')
@@ -370,6 +388,7 @@ class TemplateEditor extends Component
             'currentStep' => $step,
             'steps' => Step::ordered(),
             'stepErrors' => $this->stepErrors($step),
+            'submit' => $this->submit,
         ]);
     }
 }

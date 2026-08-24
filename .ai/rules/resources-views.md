@@ -29,3 +29,8 @@ The submit button dispatches `template-submit` and the HOST calls Meta. Livewire
 The flag is lowered ONLY by `template-submit-settled`, which the host emits on every exit — success, refusal, and the payload it declined to send. The editor cannot lower it itself: on the paths where the host answers without re-rendering anything here, a button waiting for a re-render spins forever.
 
 The listener sits on the editor root, not `.window` — the host addresses the event with `->to('wa-template-editor')`, and Livewire delivers those straight to the component's element without bubbling.
+
+## The submit button is opt-out, and the host that turns it off must own the action
+`TemplateEditor::$submit` defaults to TRUE — a host embedding the editor bare has nowhere else to put it, and a wizard whose last step offers no way out is the worse failure. A host with its own dialog footer passes `:submit="false"`.
+
+This is not cosmetic. The editor's button hands off through `$dispatch('template-submit')` and raises an Alpine flag that ONLY `template-submit-settled` lowers, so a host that draws the button and never answers the event gets a button reading "Submitting…" forever — which is exactly what happened when this package was first embedded. Either wire both halves of the contract or turn the button off; drawing it beside a second primary button that does the same job is neither.
