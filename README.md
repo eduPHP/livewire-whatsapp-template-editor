@@ -5,7 +5,12 @@ A Livewire editor and visualizer for WhatsApp Business message templates.
 Plain Blade and Tailwind — no UI library — so consumers are not forced onto
 Mary, Flux, or Filament.
 
-## Install
+## Quick start
+
+The four steps below are the whole of what the package needs to render and
+work. Everything after them is optional.
+
+### 1. Install
 
 The package is not on Packagist, so point Composer at the GitHub repository:
 
@@ -27,8 +32,9 @@ composer require eduphp/livewire-whatsapp-template-editor:dev-main
 There is no tagged release yet, so `dev-main` is the only constraint that
 resolves. Track a tag instead once one exists.
 
-Tailwind 4 is CSS-first and does not scan vendor paths by default, so register
-the package's views in your stylesheet:
+### 2. Register the views with Tailwind
+
+Tailwind 4 is CSS-first and does not scan vendor paths by default:
 
 ```css
 @source '../../vendor/eduphp/livewire-whatsapp-template-editor/resources/views/**/*.blade.php';
@@ -37,7 +43,7 @@ the package's views in your stylesheet:
 **A missed `@source` renders the phone mock unstyled**, which is a confusing
 first-run failure rather than an obvious one.
 
-### The accent tokens
+### 3. Define the accent tokens
 
 The editor paints its accents from three CSS variables, which the host defines
 because the host owns the palette:
@@ -48,40 +54,15 @@ because the host owns the palette:
     --color-accent-foreground: var(--color-white);  /* label ON an accent fill */
     --color-accent-text: var(--color-emerald-600);  /* accent text on a neutral panel */
 }
-
-/* The mint has to lighten in dark mode; the fill does not. */
-.dark, [data-theme='your-dark-theme'] {
-    --color-accent-text: var(--color-emerald-400);
-}
 ```
 
-`--color-accent-text` is deliberately not named `--color-accent-content`:
-daisyUI defines that one to mean the opposite — the near-black label drawn *on*
-an accent fill — and emits it after the host's own `@theme`, so the host's
-value loses the cascade and accent text renders near-black on a dark panel.
-
-The form controls name both halves of their palette and carry a matching
-`color-scheme`, so the native chrome a browser paints itself — a `<select>`'s
-popup above all — follows the theme rather than defaulting to light. They rely
-on the host resolving Tailwind's `dark:` variant; a host keying dark mode off
-something other than `.dark` must teach Tailwind about it, e.g.
-
-```css
-@custom-variant dark (&:where(.dark, .dark *, [data-theme='my-dark'], [data-theme='my-dark'] *));
-```
-
-**The editor grows to its content and expects its container to scroll.** It
-sets no height cap of its own, so a host embedding it in a modal must give
-that dialog the height limit and `overflow-y-auto` — otherwise the form runs
-past the bottom of a phone viewport with no way to reach it.
-
-## Use
+### 4. Drop in the component and listen
 
 The editor is a black box with two openings: an optional existing template in,
 and a `template-changed` event out.
 
 ```blade
-<livewire:wa-template-editor :template="$existing" />
+<livewire:wa-template-editor />
 ```
 
 ```php
@@ -106,6 +87,87 @@ order — `handle(bool $valid, array $payload)` works — but renaming one to
 The payload is emitted even when `$valid` is false, so you can save a draft an
 operator is still working on.
 
+That is a working editor. The rest of this document is configuration.
+
+## Configuration
+
+### Component props
+
+#### `wa-template-editor`
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `template` | `?array` | `null` | A Meta create request, or its bare `components` array, to open for editing |
+| `language` | `?string` | `en_US` | The language a **new** draft starts in |
+| `submit` | `bool` | `true` | Whether the last step draws its own submit button. See [Submitting](#submitting) |
+
+```blade
+<livewire:wa-template-editor :template="$existing" language="pt_BR" />
+```
+
+`language` is deliberately only the starting value for a new draft: a
+`:template` passed in keeps whatever code it was approved under, and the parse
+fallbacks still land on `en_US` — pointing those at a host default would
+silently re-language an imported template. It is not validated against the
+picker's shortlist either; Meta accepts roughly eighty codes and the list is
+eleven, and the view renders an unlisted code as its own option, so a host
+passing `ja` gets `ja`.
+
+#### `wa-template-visualizer`
+
+The visualizer is usable on its own. Given a stored `components` array it renders
+the template inside a mock phone — which is what a connection screen wants for an
+already-approved template.
+
+```blade
+<livewire:wa-template-visualizer :template="$template->components" contact-name="Lucky Shrub" />
+```
+
+| Prop | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `template` | `array` | `[]` | A Meta create request, or the bare `components` array a listing stores |
+| `contactName` | `?string` | `Business` | The name drawn in the mock conversation header |
+| `keyboard` | `bool` | `false` | Draw the on-screen keyboard |
+| `chrome` | `bool` | `true` | Draw the device shell around the bubble. The editor sets this false — beside a form the phone competes with the fields for width. Chrome-less also drops the keyboard toggle and the reset control |
+
+Quick-reply buttons mock the reply they would send; the other button types
+reveal what tapping them would do, including the resolved URL with its variable
+substituted.
+
+### Theming
+
+#### Dark mode
+
+The mint accent has to lighten in dark mode; the fill does not.
+
+```css
+.dark, [data-theme='your-dark-theme'] {
+    --color-accent-text: var(--color-emerald-400);
+}
+```
+
+`--color-accent-text` is deliberately not named `--color-accent-content`:
+daisyUI defines that one to mean the opposite — the near-black label drawn *on*
+an accent fill — and emits it after the host's own `@theme`, so the host's
+value loses the cascade and accent text renders near-black on a dark panel.
+
+The form controls name both halves of their palette and carry a matching
+`color-scheme`, so the native chrome a browser paints itself — a `<select>`'s
+popup above all — follows the theme rather than defaulting to light. They rely
+on the host resolving Tailwind's `dark:` variant; a host keying dark mode off
+something other than `.dark` must teach Tailwind about it, e.g.
+
+```css
+@custom-variant dark (&:where(.dark, .dark *, [data-theme='my-dark'], [data-theme='my-dark'] *));
+```
+
+#### Height
+
+**The editor grows to its content and expects its container to scroll.** It
+sets no height cap of its own, so a host embedding it in a modal must give
+that dialog the height limit and `overflow-y-auto` — otherwise the form runs
+past the bottom of a phone viewport with no way to reach it.
+
 ### Submitting
 
 The package never submits. It produces the payload; you decide when and how to
@@ -129,21 +191,45 @@ The button is disabled while the template is invalid, but treat that as a
 convenience rather than a guarantee — re-check the `$valid` you stored before
 sending.
 
-### Visualizer
+#### When you draw your own button
 
-The visualizer is usable on its own. Given a stored `components` array it renders
-the template inside a mock phone — which is what a connection screen wants for an
-already-approved template.
+Pass `:submit="false"` and the last step draws no button of its own:
 
 ```blade
-<livewire:wa-template-visualizer :template="$template->components" contact-name="Lucky Shrub" />
+<livewire:wa-template-editor :template="$payload" :submit="false" />
 ```
 
-Quick-reply buttons mock the reply they would send; the other button types
-reveal what tapping them would do, including the resolved URL with its variable
-substituted.
+Do this whenever the editor sits inside a dialog that already has a footer.
+Two primary buttons on one screen is not a redundancy — the operator cannot
+tell which one is the real one, and the editor's own button spins forever
+unless you also answer `template-submit`.
 
-## Capabilities
+The default is `true` because a host embedding the editor bare has nowhere else
+to put it, and a wizard whose last step offers no way out is the worse failure.
+
+Nothing else changes: `template-changed` still carries the payload, and your
+own button calls your own action directly.
+
+#### Answering `template-submit`
+
+If you keep the editor's button, you **must** handle the event and emit
+`template-submit-settled` back — on **every** exit, including the ones where you
+refuse. The button raises its spinner on the click and only that event lowers
+it, so a host that returns silently leaves it reading "Submitting…" for good:
+
+```php
+#[On('template-submit')]
+public function submit(): void
+{
+    try {
+        // ... your action
+    } finally {
+        $this->dispatch('template-submit-settled')->to('wa-template-editor');
+    }
+}
+```
+
+### Capabilities
 
 Optional interfaces. Bind whichever you have; an unbound one disables the
 components that need it **with a stated reason** rather than hiding them.
@@ -164,7 +250,7 @@ Resumable Upload API. That is **not** the media id `POST /<PHONE_NUMBER_ID>/medi
 returns — that id is for sending, the handle is for template creation, and
 swapping them yields a template Meta accepts but cannot render.
 
-### Pre-filled variables
+#### Pre-filled variables
 
 Variables your app already fills at send time — a contact's name, the business
 name — are offered by name so an operator picks one instead of inventing a
@@ -192,7 +278,7 @@ Declaring a variable only makes it *available*. A template need not use it, and
 an unused one appears nowhere in the payload. A pre-filled variable cannot be
 renamed in the editor — its name is the contract your sending code matches on.
 
-### Closing the set
+#### Closing the set
 
 `VariableSource` is additive: it offers names, but the body is a free textarea
 and an operator can still type `{{preco}}`. If your sending code substitutes
