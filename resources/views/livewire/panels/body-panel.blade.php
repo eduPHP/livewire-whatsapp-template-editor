@@ -50,7 +50,7 @@
                      match. --}}
                 <div x-data="{ open: false }" class="relative shrink-0">
                     <x-wa-templates::form.button x-on:click="open = ! open">
-                        + {{ __('Variable') }}
+                        {{ $this->pickerLabel() }}
                         <svg class="size-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                             <path d="M12 15.5 5.5 9h13L12 15.5Z" />
                         </svg>
