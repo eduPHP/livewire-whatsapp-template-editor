@@ -49,13 +49,11 @@ class BodyPanel extends Panel
      */
     public function mount(
         array $values = [],
-        array $errors = [],
         array $prefilled = [],
         ?string $customVariableReason = null,
     ): void {
         $this->text = (string) ($values['text'] ?? '');
         $this->examples = array_map('strval', $values['examples'] ?? []);
-        $this->panelErrors = $errors;
         $this->prefilled = $prefilled;
         $this->customVariableReason = $customVariableReason;
     }

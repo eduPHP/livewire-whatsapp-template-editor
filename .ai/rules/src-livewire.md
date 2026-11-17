@@ -28,3 +28,6 @@ The trap is that this only fires on a real browser request. `Livewire::test()->d
 `goToStep()` is deliberately ungated — the numbered header is clickable and every step is reachable, including ones ahead. The wizard orders the questions; it does not lock them.
 
 Also: the Livewire component has a public `string $step`, so `render()` must pass the enum as `currentStep`. A view variable named `step` is silently shadowed by the property and every `$step->method()` call fails with "Call to a member function on string".
+
+## Panel errors are a reactive prop, never a mount copy
+The editor validates; panels only render. `Panel::$panelErrors` is `#[Reactive]` and the editor passes it as `:panel-errors`. Panels carry static keys (`'body'`, `'header'`…) and never remount, so a mount-time copy froze the errors at whatever they were when the step opened — an empty body's "The body text is required." stayed under a filled textarea, and a closed-set variable error never reached its row while the footer (which re-validates) showed it. Never assign `panelErrors` inside a panel: Livewire throws `CannotMutateReactivePropException`. `Livewire::test()` does not re-render children after a parent update, so a parent-level test passes with or without this — assert the attribute, and check a real browser.
