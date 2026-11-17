@@ -24,10 +24,9 @@ class ButtonsPanel extends Panel
      * @param  array<string,mixed>  $values
      * @param  array<string,list<string>>  $errors
      */
-    public function mount(array $values = [], array $errors = [], ?string $catalogReason = null): void
+    public function mount(array $values = [], ?string $catalogReason = null): void
     {
         $this->buttons = array_values($values['buttons'] ?? []);
-        $this->panelErrors = $errors;
         $this->catalogReason = $catalogReason;
     }
 

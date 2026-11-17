@@ -85,13 +85,13 @@
             @if ($currentStep === Step::Identification)
                 <livewire:wa-template-metadata-panel
                     :values="$state['meta'] ?? []"
-                    :errors="$errors->errors"
+                    :panel-errors="$errors->errors"
                     :key="'meta'"
                 />
             @elseif ($currentStep === Step::Content)
                 <livewire:wa-template-body-panel
                     :values="$state['body'] ?? []"
-                    :errors="$errors->errors"
+                    :panel-errors="$errors->errors"
                     :prefilled="$prefilled"
                     :custom-variable-reason="$customVariableReason"
                     :key="'body'"
@@ -105,7 +105,7 @@
                 <div class="mt-4">
                     <livewire:wa-template-buttons-panel
                         :values="$state['buttons'] ?? []"
-                        :errors="$errors->errors"
+                        :panel-errors="$errors->errors"
                         :catalog-reason="$catalogReason"
                         :key="'buttons'"
                     />
@@ -131,7 +131,7 @@
                     @if (isset($state['header']))
                         <livewire:wa-template-header-panel
                             :values="$state['header']"
-                            :errors="$errors->errors"
+                            :panel-errors="$errors->errors"
                             :media-reason="$mediaReason"
                             :key="'header'"
                         />
@@ -140,7 +140,7 @@
                     @if (isset($state['footer']))
                         <livewire:wa-template-footer-panel
                             :values="$state['footer']"
-                            :errors="$errors->errors"
+                            :panel-errors="$errors->errors"
                             :key="'footer'"
                         />
                     @else
@@ -162,7 +162,7 @@
                     @if (isset($state['carousel']))
                         <livewire:wa-template-carousel-panel
                             :values="$state['carousel']"
-                            :errors="$errors->errors"
+                            :panel-errors="$errors->errors"
                             :media-reason="$mediaReason"
                             :catalog-reason="$catalogReason"
                             :key="'carousel'"

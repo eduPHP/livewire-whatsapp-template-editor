@@ -27,7 +27,7 @@ class MetadataPanel extends Panel
      * @param  array<string,mixed>  $values
      * @param  array<string,list<string>>  $errors
      */
-    public function mount(array $values = [], array $errors = []): void
+    public function mount(array $values = []): void
     {
         $this->name = (string) ($values['name'] ?? '');
         $this->language = (string) ($values['language'] ?? 'en_US');
@@ -35,7 +35,6 @@ class MetadataPanel extends Panel
         $this->parameter_format = $values['parameter_format'] ?? null;
         $this->upper_case = (bool) ($values['upper_case'] ?? false);
         $this->nested_body_example = (bool) ($values['nested_body_example'] ?? true);
-        $this->panelErrors = $errors;
     }
 
     protected function slice(): string

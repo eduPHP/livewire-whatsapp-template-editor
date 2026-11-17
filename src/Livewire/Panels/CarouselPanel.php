@@ -39,12 +39,10 @@ class CarouselPanel extends Panel
      */
     public function mount(
         array $values = [],
-        array $errors = [],
         ?string $mediaReason = null,
         ?string $catalogReason = null,
     ): void {
         $this->cards = array_values($values['cards'] ?? []);
-        $this->panelErrors = $errors;
         $this->mediaReason = $mediaReason;
         $this->catalogReason = $catalogReason;
 

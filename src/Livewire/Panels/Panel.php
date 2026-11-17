@@ -2,6 +2,7 @@
 
 namespace WaTemplates\Livewire\Panels;
 
+use Livewire\Attributes\Reactive;
 use Livewire\Component;
 use WaTemplates\Livewire\TemplateEditor;
 use WaTemplates\Validation\ValidationResult;
@@ -18,8 +19,16 @@ abstract class Panel extends Component
     /**
      * Errors for this panel's subtree, keyed by component path.
      *
+     * Reactive because the panel never validates itself: the editor
+     * re-validates on every published change and passes the result back down.
+     * A plain mount prop is read once, and the panels carry static keys so they
+     * never remount — the errors then stayed whatever they were when the step
+     * opened. A body typed into an empty step kept "The body text is required."
+     * under it, and an out-of-set variable's error never reached its own row.
+     *
      * @var array<string,list<string>>
      */
+    #[Reactive]
     public array $panelErrors = [];
 
     /**

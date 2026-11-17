@@ -51,14 +51,13 @@ class HeaderPanel extends Panel
      * @param  array<string,mixed>  $values
      * @param  array<string,list<string>>  $errors
      */
-    public function mount(array $values = [], array $errors = [], ?string $mediaReason = null): void
+    public function mount(array $values = [], ?string $mediaReason = null): void
     {
         $this->mediaReason = $mediaReason;
         $this->format = (string) ($values['format'] ?? 'TEXT');
         $this->text = (string) ($values['text'] ?? '');
         $this->examples = array_map('strval', $values['examples'] ?? []);
         $this->handle = $values['handle'] ?? null;
-        $this->panelErrors = $errors;
     }
 
     protected function slice(): string
