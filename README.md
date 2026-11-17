@@ -302,6 +302,10 @@ It extends `VariableSource` and adds no methods — bind it under the same
 `VariableSource::class` key. The editor then:
 
 - hides both "+ Variable" affordances, stating why rather than leaving a gap;
+- labels the picker "Insert variable" instead of "+ Variable" — it can only
+  insert one of your variables, and a "+" reads as "create";
+- shows your first variable in the body's placeholder (`Olá, {{cliente}}`)
+  rather than the generic `{{nome}}`, which your set may not contain;
 - makes `addVariable()` and `renameVariable()` no-ops, so the set holds even
   against a `wire:click` fired from the console;
 - disables the switch to named variables, whose generated names are invented;

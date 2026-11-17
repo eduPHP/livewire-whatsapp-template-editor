@@ -85,6 +85,33 @@ class BodyPanel extends Panel
         return array_diff_key($this->prefilled, array_flip(Parameter::keysIn($this->text)));
     }
 
+    /**
+     * The variable the textarea's placeholder shows as an example.
+     *
+     * One the host actually fills when it declares any: a placeholder is the
+     * first example an operator copies, and showing `{{nome}}` to a host whose
+     * closed set calls it `cliente` taught operators a name the validator then
+     * refused.
+     */
+    public function placeholderVariable(): string
+    {
+        return array_key_first($this->prefilled) ?? 'nome';
+    }
+
+    /**
+     * The picker button's label.
+     *
+     * "+ Variable" only while the operator may invent one: under a closed set
+     * the button can only insert a variable that already exists, and a "+"
+     * reads as "create" — operators never opened it to find the list.
+     */
+    public function pickerLabel(): string
+    {
+        return $this->allowsCustomVariables()
+            ? '+ '.__('Variable')
+            : __('Insert variable');
+    }
+
     protected function slice(): string
     {
         return 'body';
@@ -395,7 +422,7 @@ class BodyPanel extends Panel
             'named' => $this->usesNamedVariables(),
             'allowsCustom' => $this->allowsCustomVariables(),
             /** Blade cannot assemble a literal `{{…}}` inline; see .ai/rules. */
-            'variableSyntax' => '{{nome}}',
+            'variableSyntax' => sprintf('{{%s}}', $this->placeholderVariable()),
             'numberedExample' => '{{1}}',
         ]);
     }
